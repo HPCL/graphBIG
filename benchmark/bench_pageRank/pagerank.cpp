@@ -147,8 +147,9 @@ void parallel_pagerank(graph_t& g,
             for (unsigned vid=start;vid<end;vid++)
             {
                 vertex_iterator vit = g.find_vertex(vid);
-                float d = vit->property().pr - vit->property().old_pr;
-                e_vec[tid] += d * d;
+                float d = fabs(vit->property().pr - vit->property().old_pr);
+                // e_vec[tid] += d * d;
+                e_vec[tid] += d;
             }
             #pragma omp barrier
             if (tid==0)
@@ -158,7 +159,8 @@ void parallel_pagerank(graph_t& g,
                 {
                     tot += e_vec[i];
                 }
-                float err = sqrt(tot);
+                // float err = sqrt(tot);
+                float err = tot;
                 if (err < quad || (++itercnt) > maxiter)
                 {
                     stop = true;
