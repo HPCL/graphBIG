@@ -19,6 +19,10 @@
 #include "HMC.h"
 #endif
 
+#ifdef POWER_PROFILING
+#include "power_rapl.h"
+#endif
+
 using namespace std;
 
 #define MY_INFINITY 0xfff0
@@ -274,6 +278,11 @@ int main(int argc, char * argv[])
     arg.get_value("beginiter",beginiter);
     arg.get_value("enditer",enditer);
 #endif
+#ifdef POWER_PROFILING
+    power_rapl_t ps;
+    power_rapl_init(&ps);
+    printf("Monitoring power with RAPL on GAP BFS\n");
+#endif
 
 
     graph_t graph;
@@ -312,6 +321,9 @@ int main(int argc, char * argv[])
     if (run_num==0) run_num = 1;
     double elapse_time = 0;
     
+#ifdef POWER_PROFILING
+    power_rapl_start(&ps);
+#endif
     for (unsigned i=0;i<run_num;i++)
     {
         t1 = timer::get_usec();
@@ -325,6 +337,11 @@ int main(int argc, char * argv[])
         elapse_time += t2-t1;
         if ((i+1)<run_num) reset_graph(graph);
     }
+#ifdef POWER_PROFILING
+    power_rapl_end(&ps);
+    power_rapl_print(&ps);
+#endif
+
     cout<<"BFS finish: \n";
 
 #ifndef ENABLE_VERIFY

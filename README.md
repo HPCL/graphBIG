@@ -71,6 +71,12 @@ $ make run
 $ cat output.log
 ```
 
+### Power and Energy Measurement
+In order to measure power and energy you must have root privilege and do three things:
+1. Install [PAPI](http://icl.utk.edu/papi/) on your local system
+2. Set the variable `PAPI_HOME` accordingly in `benchmark/common.mk`
+3. Set `BUILD_RAPL` in `benchmark/common.mk` to `Yes`
+
 ### Documents
 
 Documents can be found in the [GraphBIG-Doc](https://github.com/graphbig/GraphBIG-Doc) repository in the same graphbig organization. 

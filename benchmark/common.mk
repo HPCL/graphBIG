@@ -3,7 +3,7 @@ INCLUDE+=-I${ROOT}/common -I${ROOT}/openG
 EXTRA_CXX_FLAGS+=-L${ROOT}/tools/lib
 
 # Requires PAPI installed at PAPI_HOME and root permission
-BUILD_RAPL = Yes
+BUILD_RAPL = No
 ifeq ($(BUILD_RAPL), Yes)
 	PAPI_HOME=/usr/local/packages/papi/git
 	CFLAGS += -I$(PAPI_HOME)/include -DPOWER_PROFILING=1 -g -Wall
