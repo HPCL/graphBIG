@@ -281,7 +281,6 @@ int main(int argc, char * argv[])
 #ifdef POWER_PROFILING
     power_rapl_t ps;
     power_rapl_init(&ps);
-    printf("Monitoring power with RAPL on GAP BFS\n");
 #endif
 
 
@@ -339,6 +338,7 @@ int main(int argc, char * argv[])
     }
 #ifdef POWER_PROFILING
     power_rapl_end(&ps);
+    printf("Monitoring power with RAPL on GraphBIG BFS\n");
     power_rapl_print(&ps);
 #endif
 
