@@ -2,6 +2,16 @@ CXX_FLAGS+=-std=c++0x -Wall -Wno-deprecated
 INCLUDE+=-I${ROOT}/common -I${ROOT}/openG
 EXTRA_CXX_FLAGS+=-L${ROOT}/tools/lib
 
+# Requires PAPI installed at PAPI_HOME and root permission
+BUILD_RAPL = Yes
+ifeq ($(BUILD_RAPL), Yes)
+	PAPI_HOME=/usr/local/packages/papi/git
+	CFLAGS += -I$(PAPI_HOME)/include -DPOWER_PROFILING=1 -g -Wall
+	CXX_FLAGS += -DPOWER_PROFILING=1
+	EXTRA_LIBS += -L$(PAPI_HOME)/lib -Wl,-rpath,$(PAPI_HOME)/lib -lpapi -lm
+	OBJS += power_rapl.o
+endif
+
 LIBS=${EXTRA_LIBS}
 
 ifeq (${PFM},0)
@@ -79,6 +89,9 @@ all: ${ALL_TARGETS}
 
 .cpp.o:
 	${CXX} -c ${CXX_FLAGS} $<
+
+power_rapl.o: ${ROOT}/common/power_rapl.c ${ROOT}/common/power_rapl.h
+	${CC} ${CFLAGS} -c -o power_rapl.o ${ROOT}/common/power_rapl.c ${LIBS}
 
 ${TARGET}: ${OBJS}
 	${CXX} ${LINKER_OPTIONS} ${OBJS} -o $@ ${LIBS}
