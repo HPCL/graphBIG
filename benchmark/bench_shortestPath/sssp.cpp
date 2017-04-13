@@ -52,6 +52,7 @@ typedef graph_t::edge_iterator      edge_iterator;
 void arg_init(argument_parser & arg)
 {
     arg.add_arg("root","0","root/starting vertex");
+    arg.add_arg("rootfile", "", "File of roots, one per line");
 }
 //==============================================================//
 typedef pair<size_t,size_t> data_pair;
@@ -263,12 +264,16 @@ int main(int argc, char * argv[])
         arg.help();
         return -1;
     }
-    string path, separator;
+    string path, separator, rootfile;
     arg.get_value("dataset",path);
     arg.get_value("separator",separator);
 
     size_t root,threadnum;
     arg.get_value("root",root);
+    arg.get_value("rootfile",rootfile);
+    vector<size_t> rootlist = arg.read_rootfile(rootfile);
+    if (rootlist.size() == 0)
+        rootlist.push_back(root);
     arg.get_value("threadnum",threadnum);
 
 
@@ -306,41 +311,44 @@ int main(int argc, char * argv[])
     }
 
  
-    cout<<"Shortest Path: source-"<<root;
-    cout<<"...\n";
 
     gBenchPerf_multi perf_multi(threadnum, perf);
     unsigned run_num = ceil(perf.get_event_cnt() /(double) DEFAULT_PERF_GRP_SZ);
     if (run_num==0) run_num = 1;
     double elapse_time = 0;
     
-    for (unsigned i=0;i<run_num;i++)
+    for(unsigned i = 0; i < rootlist.size(); i++)
     {
-        t1 = timer::get_usec();
+        root = rootlist[i];
+        cout<<"Shortest Path: source-"<<root;
+        cout<<"...\n";
+        for (unsigned i=0;i<run_num;i++)
+        {
+            t1 = timer::get_usec();
 
-        if (threadnum==1)
-            sssp(graph, root, perf, i);
-        else
-            parallel_sssp(graph, root, threadnum, perf_multi, i);
-        
-        t2 = timer::get_usec();
-        elapse_time += t2-t1;
-        if ((i+1)<run_num) reset_graph(graph);
-    }
+            if (threadnum==1)
+                sssp(graph, root, perf, i);
+            else
+                parallel_sssp(graph, root, threadnum, perf_multi, i);
+            
+            t2 = timer::get_usec();
+            elapse_time += t2-t1;
+            if ((i+1)<run_num) reset_graph(graph);
+        }
 #ifndef ENABLE_VERIFY
-    cout<<"== time: "<<elapse_time/run_num<<" sec\n";
-    if (threadnum == 1)
-        perf.print();
-    else
-        perf_multi.print();
+        cout<<"== time: "<<elapse_time/run_num<<" sec\n";
+        if (threadnum == 1)
+            perf.print();
+        else
+            perf_multi.print();
 #endif
 
 
 #ifdef ENABLE_OUTPUT
-    cout<<"\n";
-    output(graph);
+        cout<<"\n";
+        output(graph);
 #endif
-
+    }
     cout<<"==================================================================\n";
     return 0;
 }  // end main
