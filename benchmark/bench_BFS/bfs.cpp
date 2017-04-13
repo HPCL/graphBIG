@@ -1,7 +1,7 @@
 //====== Graph Benchmark Suites ======//
 //======= Breadth-first Search =======//
 //
-// Usage: ./bfs.exe --dataset <dataset path> --root <root vertex id>
+// Usage: ./bfs.exe --dataset <dataset path> --root <root vertex id> --rootfile <filename>
 
 #include "common.h"
 #include "def.h"
@@ -56,8 +56,10 @@ typedef graph_t::edge_iterator      edge_iterator;
 void arg_init(argument_parser & arg)
 {
     arg.add_arg("root","0","root/starting vertex");
+    arg.add_arg("rootfile", "", "File of roots, one per line");
 }
 //==============================================================//
+
 
 class BFSVisitor
 {
@@ -267,22 +269,21 @@ int main(int argc, char * argv[])
         arg.help();
         return -1;
     }
-    string path, separator;
+    string path, separator, rootfile;
     arg.get_value("dataset",path);
     arg.get_value("separator",separator);
 
     size_t root,threadnum;
     arg.get_value("root",root);
+    arg.get_value("rootfile",rootfile);
+    vector<size_t> rootlist = arg.read_rootfile(rootfile);
+    if (rootlist.size() == 0)
+        rootlist.push_back(root);
     arg.get_value("threadnum",threadnum);
 #ifdef SIM
     arg.get_value("beginiter",beginiter);
     arg.get_value("enditer",enditer);
 #endif
-#ifdef POWER_PROFILING
-    power_rapl_t ps;
-    power_rapl_init(&ps);
-#endif
-
 
     graph_t graph;
     double t1, t2;
@@ -313,51 +314,55 @@ int main(int argc, char * argv[])
 
     BFSVisitor vis;
 
-    cout<<"\nBFS root: "<<root<<"\n";
     
     gBenchPerf_multi perf_multi(threadnum, perf);
     unsigned run_num = ceil(perf.get_event_cnt() /(double) DEFAULT_PERF_GRP_SZ);
     if (run_num==0) run_num = 1;
     double elapse_time = 0;
     
-#ifdef POWER_PROFILING
-    power_rapl_start(&ps);
-#endif
-    for (unsigned i=0;i<run_num;i++)
+    for(unsigned i = 0; i < rootlist.size(); i++)
     {
-        t1 = timer::get_usec();
-
-        if (threadnum==1)
-            bfs(graph, root, vis, perf, i);
-        else
-            parallel_bfs(graph, root, threadnum, perf_multi, i);
-
-        t2 = timer::get_usec();
-        elapse_time += t2-t1;
-        if ((i+1)<run_num) reset_graph(graph);
-    }
 #ifdef POWER_PROFILING
-    power_rapl_end(&ps);
-    printf("Monitoring power with RAPL on GraphBIG BFS\n");
-    power_rapl_print(&ps);
+        power_rapl_t ps;
+        power_rapl_init(&ps);
+        power_rapl_start(&ps);
 #endif
+        root = rootlist[i];
+        cout<<"\nBFS root: "<<root<<"\n";
+        for (unsigned i=0;i<run_num;i++)
+        {
+            t1 = timer::get_usec();
 
-    cout<<"BFS finish: \n";
+            if (threadnum==1)
+                bfs(graph, root, vis, perf, i);
+            else
+                parallel_bfs(graph, root, threadnum, perf_multi, i);
+
+            t2 = timer::get_usec();
+            elapse_time += t2-t1;
+            if ((i+1)<run_num) reset_graph(graph);
+        }
+#ifdef POWER_PROFILING
+        power_rapl_end(&ps);
+        printf("Monitoring power with RAPL on GraphBIG BFS\n");
+        power_rapl_print(&ps);
+#endif
+        cout<<"BFS finish: \n";
 
 #ifndef ENABLE_VERIFY
-    cout<<"== time: "<<elapse_time/run_num<<" sec\n";
-    if (threadnum == 1)
-        perf.print();
-    else
-        perf_multi.print();
+        cout<<"== time: "<<elapse_time/run_num<<" sec\n";
+        if (threadnum == 1)
+            perf.print();
+        else
+            perf_multi.print();
 #endif
 
 #ifdef ENABLE_OUTPUT
-    cout<<"\n";
-    output(graph);
+        cout<<"\n";
+        output(graph);
 #endif
-
+    }
     cout<<"=================================================================="<<endl;
     return 0;
-}  // end main
+}
 

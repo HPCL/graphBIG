@@ -163,7 +163,24 @@ public:
             return false;
         return true;
     }
-#endif    
+#endif
+
+    std::vector<size_t> read_rootfile(std::string rootfile)
+    {
+        std::vector<size_t> rootlist;
+        // std::cout << "Reading roots from " << rootfile << std::endl;
+        if (rootfile.compare("") == 0)
+            return rootlist; // return empty vector, just use --root option
+        std::ifstream infile(rootfile);
+        size_t a_root;
+        while (infile >> a_root)
+        {
+            rootlist.push_back(a_root);
+        }
+        infile.close();
+        return rootlist;
+    }
+
     void help(void)
     {
         std::cout<<"[Usage]:"<<std::endl;
@@ -246,15 +263,16 @@ class graphBIG
 public:
     static void print(void)
     {
-        std::cout<<"=================================================================="<<std::endl;
-        std::cout<<"   ________                    .__   __________.___  ________ \n";
-        std::cout<<"  /  _____/___________  ______ |  |__\\______   \\   |/  _____/ \n";
-        std::cout<<" /   \\  __\\_  __ \\__  \\ \\____ \\|  |  \\|    |  _/   /   \\  ___ \n";
-        std::cout<<" \\    \\_\\  \\  | \\// __ \\|  |_> >   Y  \\    |   \\   \\    \\_\\  \\\n";
-        std::cout<<"  \\______  /__|  (____  /   __/|___|  /______  /___|\\______  /\n";
-        std::cout<<"         \\/           \\/|__|        \\/       \\/            \\/ \n";
-        std::cout<<"                                                                 "<<std::endl;
-        std::cout<<"=================================================================="<<std::endl;
+        std::cout<<"G r a p h B I G"<<std::endl;
+        // std::cout<<"=================================================================="<<std::endl;
+        // std::cout<<"   ________                    .__   __________.___  ________ \n";
+        // std::cout<<"  /  _____/___________  ______ |  |__\\______   \\   |/  _____/ \n";
+        // std::cout<<" /   \\  __\\_  __ \\__  \\ \\____ \\|  |  \\|    |  _/   /   \\  ___ \n";
+        // std::cout<<" \\    \\_\\  \\  | \\// __ \\|  |_> >   Y  \\    |   \\   \\    \\_\\  \\\n";
+        // std::cout<<"  \\______  /__|  (____  /   __/|___|  /______  /___|\\______  /\n";
+        // std::cout<<"         \\/           \\/|__|        \\/       \\/            \\/ \n";
+        // std::cout<<"                                                                 "<<std::endl;
+        // std::cout<<"=================================================================="<<std::endl;
     }
 };
 //================================================================//
@@ -329,6 +347,5 @@ public:
         std::cout<<"binding thread-"<<thread_id<<" with core-"<<tid<<std::endl<<std::flush;
     }
 };
-
 
 #endif
