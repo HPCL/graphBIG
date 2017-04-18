@@ -318,10 +318,10 @@ int main(int argc, char * argv[])
     gBenchPerf_multi perf_multi(threadnum, perf);
     unsigned run_num = ceil(perf.get_event_cnt() /(double) DEFAULT_PERF_GRP_SZ);
     if (run_num==0) run_num = 1;
-    double elapse_time = 0;
     
     for(unsigned i = 0; i < rootlist.size(); i++)
     {
+        double elapse_time = 0;
 #ifdef POWER_PROFILING
         power_rapl_t ps;
         power_rapl_init(&ps);
